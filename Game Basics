@@ -1,1 +1,23 @@
+import pygame
 
+class airplane(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("")
+        self.rect = self.image.get_rect()
+airplane.rect.x = 100
+airplane.rect.y = 100
+
+
+pygame.init()
+width, height = 800, 600
+
+screen = pygame.display.set_mode((width, height))
+
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+pygame.quit()
