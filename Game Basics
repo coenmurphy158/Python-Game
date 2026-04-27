@@ -1,23 +1,79 @@
 import pygame
-
-class airplane(pygame.sprite.Sprite):
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("")
-        self.rect = self.image.get_rect()
-airplane.rect.x = 100
-airplane.rect.y = 100
-
+import sys
 
 pygame.init()
-width, height = 800, 600
 
-screen = pygame.display.set_mode((width, height))
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+clock = pygame.time.Clock()
 
-running = True
-while running:
+sprite_sheet_image = pygame.image.load('aircraft.png').convert_alpha()
+laser_image = pygame.image.load('laser.gif').convert_alpha()
+
+laser_speed = 5
+laser_list = []
+laser_counter = 0
+
+background = pygame.image.load("sky.png").convert()
+background = pygame.transform.scale(background, (WIDTH, HEIGHT))
+bg_y1 = 0
+bg_y2 = -HEIGHT
+bg_speed = 1
+def get_sprite(sheet, col, row):
+    SPRITE_W = 16
+    SPRITE_H = 16
+    rect = pygame.Rect(col * SPRITE_W, row * SPRITE_H, SPRITE_W, SPRITE_H)
+    return sheet.subsurface(rect)
+
+char_x = WIDTH // 2
+char_y = HEIGHT // 2
+char_speed = 2
+
+while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            pygame.quit()
+            sys.exit()
 
-pygame.quit()
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+        char_x -= char_speed
+    if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+        char_x += char_speed
+    if keys[pygame.K_UP] or keys[pygame.K_w]:
+        char_y -= char_speed
+    if keys[pygame.K_DOWN] or keys[pygame.K_s]:
+        char_y += char_speed
+
+    char_x = max(0, min(WIDTH - 16, char_x))
+    char_y = max(0, min(HEIGHT - 16, char_y))
+
+
+    bg_y1 += bg_speed
+    bg_y2 += bg_speed
+
+    if bg_y1 >= HEIGHT:
+        bg_y1 = -HEIGHT
+    if bg_y2 >= HEIGHT:
+        bg_y2 = -HEIGHT
+    screen.blit(background, (0, bg_y1))
+    screen.blit(background, (0, bg_y2))
+
+    player_image = get_sprite(sprite_sheet_image, 4, 0)
+    screen.blit(player_image, (char_x, char_y))
+
+    laser_counter += 1
+    if laser_counter >= 10:
+        laser_counter = 0
+        laser_list.append({
+            "laser_rect": pygame.Rect(char_x + 7, char_y, 2, 8)
+        })
+    for laser in laser_list:
+        pygame.draw.rect(screen, (255, 255, 255), laser["laser_rect"])
+        laser["laser_rect"].y -= laser_speed
+
+    laser_list = [laser for laser in laser_list if laser["laser_rect"].y > -10]
+
+    pygame.display.flip()
+    clock.tick(60)
+
