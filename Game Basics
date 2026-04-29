@@ -96,3 +96,8 @@ while True:
 
     pygame.display.flip()
     clock.tick(60)
+class laser_hitbox(laser.png):
+    self.image = pygame.image.load('laser.png').convert_alpha()
+    self.rect = self.image.get_rect(topleft=pos)
+    self.hitbox = self.rect.inflate(1,4)
+def update(self):
