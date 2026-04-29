@@ -1,11 +1,21 @@
 import pygame
 import sys
+import pygame_menu
 
 pygame.init()
+
 
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
+
+menu = pygame_menu.Menu('Main Menu', 600, 400)
+
+menu.add.button('Play', lambda: menu.disable())
+menu.add.button('Quit', pygame_menu.events.EXIT)
+
+menu.mainloop(screen)
+
 
 sprite_sheet_image = pygame.image.load('aircraft.png').convert_alpha()
 laser_image = pygame.image.load('laser.gif').convert_alpha()
@@ -19,6 +29,8 @@ background = pygame.transform.scale(background, (WIDTH, HEIGHT))
 bg_y1 = 0
 bg_y2 = -HEIGHT
 bg_speed = 1
+
+
 def get_sprite(sheet, col, row):
     SPRITE_W = 16
     SPRITE_H = 16
@@ -59,15 +71,23 @@ while True:
     screen.blit(background, (0, bg_y1))
     screen.blit(background, (0, bg_y2))
 
-    player_image = get_sprite(sprite_sheet_image, 4, 0)
+    player_image = get_sprite(sprite_sheet_image, 3, 3)
     screen.blit(player_image, (char_x, char_y))
 
     laser_counter += 1
-    if laser_counter >= 10:
+    if laser_counter >= 15:
         laser_counter = 0
+
+    keys = pygame.key.get_pressed()
+
+    if keys[pygame.K_SPACE] and laser_counter == 0:
         laser_list.append({
             "laser_rect": pygame.Rect(char_x + 7, char_y, 2, 8)
         })
+        laser_counter = 20
+        if laser_counter >= 0:
+            laser_counter = 1
+
     for laser in laser_list:
         pygame.draw.rect(screen, (255, 255, 255), laser["laser_rect"])
         laser["laser_rect"].y -= laser_speed
@@ -76,4 +96,3 @@ while True:
 
     pygame.display.flip()
     clock.tick(60)
-
