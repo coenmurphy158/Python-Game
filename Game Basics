@@ -1,6 +1,7 @@
 import pygame
 import sys
 import pygame_menu
+import self
 
 pygame.init()
 
@@ -16,21 +17,46 @@ menu.add.button('Quit', pygame_menu.events.EXIT)
 
 menu.mainloop(screen)
 
-
 sprite_sheet_image = pygame.image.load('aircraft.png').convert_alpha()
 laser_image = pygame.image.load('laser.gif').convert_alpha()
-
 laser_speed = 5
 laser_list = []
 laser_counter = 0
-
 background = pygame.image.load("sky.png").convert()
 background = pygame.transform.scale(background, (WIDTH, HEIGHT))
 bg_y1 = 0
 bg_y2 = -HEIGHT
 bg_speed = 1
+class Enemy:
+    def __init__(self, x, y, width, height, end):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.path = [x, end]
+        self.vel = 4
+        self.image = pygame.image.load('enemy.webp').convert_alpha()
 
+    def draw(self, win):
+        win.blit(self.image, (self.x, self.y))
+        self.move()
 
+    def move(self):
+        if self.vel > 0:
+            if self.x + self.vel < self.path[1]:
+                self.x += self.vel
+            else:
+                self.vel = -self.vel
+        else:
+            if self.x + self.vel > self.path[0]:
+                self.x += self.vel
+            else:
+                self.vel = -self.vel
+
+enemy_airplane = Enemy(100, 200, 64, 64, 300)
+if enemy_airplane is not None:
+    print("airplane spawned")
+enemy_airplane.draw(screen)
 def get_sprite(sheet, col, row):
     SPRITE_W = 16
     SPRITE_H = 16
@@ -40,6 +66,7 @@ def get_sprite(sheet, col, row):
 char_x = WIDTH // 2
 char_y = HEIGHT // 2
 char_speed = 2
+
 
 while True:
     for event in pygame.event.get():
@@ -94,10 +121,6 @@ while True:
 
     laser_list = [laser for laser in laser_list if laser["laser_rect"].y > -10]
 
+
     pygame.display.flip()
     clock.tick(60)
-class laser_hitbox(laser.png):
-    self.image = pygame.image.load('laser.png').convert_alpha()
-    self.rect = self.image.get_rect(topleft=pos)
-    self.hitbox = self.rect.inflate(1,4)
-def update(self):
