@@ -129,5 +129,12 @@ while True:
     for enemy in enemies:
         enemy.draw()
 
+#double shot powerup
+    class Powerup:
+        def __init__(self):
+            self.image = pygame.image.load('powerup2.png').convert_alpha()
+            self.rect = self.image()
+            self.rect.x = random.randint(300, 400)
+
     pygame.display.update()
     clock.tick(60)
