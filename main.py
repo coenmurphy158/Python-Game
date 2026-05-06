@@ -2,6 +2,7 @@ import pygame
 import sys
 import pygame_menu
 import random
+#dih
 pygame.init()
 
 WIDTH, HEIGHT = 800, 600
