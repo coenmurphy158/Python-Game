@@ -133,6 +133,10 @@ if __name__ == '__main__':
             for enemy in enemies[:]:
                 enemy_rect = pygame.Rect(enemy.x, enemy.y, enemy.width, enemy.height)
                 if laser["laser_rect"].colliderect(enemy_rect):
+                    show_image = True
+
+                    if show_image:
+                        pygame.sprite.spritecollide('pixelatedexplosion.png', enemies, False)
                     enemies.remove(enemy)
                     laser_list.remove(laser)
                     break
