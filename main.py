@@ -23,9 +23,16 @@ score = 0
 score_animation = 0
 game_over = False
 
+player_health = 100
+player_max_health = 100
+display_health = player_health
+health_flash = 0
+screen_shake = 0
+
 def restart_game():
     global char_x, char_y, enemies, laser_list, enemy_lasers, explosions
     global score, score_animation, game_over, bg_y1, bg_y2
+    global player_health, display_health, health_flash, screen_shake
 
     char_x = WIDTH // 2
     char_y = HEIGHT // 2
@@ -39,6 +46,10 @@ def restart_game():
     bg_y2 = -HEIGHT
     game_over = False
 
+    player_health = player_max_health
+    display_health = player_health
+    health_flash = 0
+    screen_shake = 0
 
 class Powerup:
     def __init__(self):
@@ -46,7 +57,6 @@ class Powerup:
         self.rect = pygame.rect.Rect(self.sprite.get_rect().center)
     def draw(self):
         win.blit(self.sprite, (self.rect.x, self.rect.y))
-
 
 class Enemy:
     walkRight = [pygame.image.load('enemy_pixel.bmp')]
@@ -76,6 +86,27 @@ class Enemy:
                 self.x += self.vel
             else:
                 self.vel = -self.vel
+class KamikazeEnemy:
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
+        self.speed = 2
+        self.target_x = char_x
+        self.target_y = char_y
+        self.image = pygame.image.load('enemy_pixel.bmp').convert_alpha()
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
+    def update(self):
+        dx = self.target_x - self.x
+        dy = self.target_y - self.y
+        dist = max(1,(dx*dx + dy*dy)**0.5)
+        self.x += (dx / dist) * self.speed
+        self.y += (dy / dist) * self.speed
+        self.speed +=0.05
+    def draw(self):
+        win.blit(self.image,(self.x,self.y))
+        self.update()
+
 
 
 def get_sprite(sheet, col, row):
@@ -117,13 +148,15 @@ if __name__ == '__main__':
                 sys.exit()
 
             if event.type == spawn_enemy and not game_over:
-                x = random.randint(0, WIDTH - 20)
-                enemies.append(Enemy(x, 0, 30, 30, x + 200))
+                if random.randint(1,3) == 1:
+                    enemies.append(KamikazeEnemy(random.randint(0,WIDTH - 20),0))
+                else:
+                    x = random.randint(0, WIDTH - 20)
+                    enemies.append(Enemy(x, 0, 30, 30, x + 200))
 
             if game_over:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                     restart_game()
-
 
         if game_over:
             go_font = pygame.font.Font('pixel_text.ttf', 48)
@@ -137,7 +170,6 @@ if __name__ == '__main__':
             pygame.display.update()
             clock.tick(60)
             continue
-
 
         keys = pygame.key.get_pressed()
 
@@ -153,6 +185,12 @@ if __name__ == '__main__':
         char_x = max(0, min(WIDTH - 16, char_x))
         char_y = max(0, min(HEIGHT - 16, char_y))
 
+        shake_x = 0
+        shake_y = 0
+        if screen_shake > 0:
+            shake_x = random.randint(-5, 5)
+            shake_y = random.randint(-5, 5)
+            screen_shake -= 1
 
         bg_y1 += bg_speed
         bg_y2 += bg_speed
@@ -161,10 +199,12 @@ if __name__ == '__main__':
         if bg_y2 >= HEIGHT:
             bg_y2 = -HEIGHT
 
-        win.blit(background, (0, bg_y1))
-        win.blit(background, (0, bg_y2))
+        win.blit(background, (shake_x, bg_y1 + shake_y))
+        win.blit(background, (shake_x, bg_y2 + shake_y))
+
         player_image = get_sprite(player, 3, 3)
         win.blit(player_image, (char_x, char_y))
+
         laser_counter += 1
         if laser_counter >= 15:
             laser_counter = 0
@@ -192,8 +232,9 @@ if __name__ == '__main__':
 
         for enemy in enemies:
             enemy.draw()
-            if random.randint(1, 120) == 1:
-                enemy_lasers.append(pygame.Rect(enemy.x + enemy.width // 2, enemy.y + enemy.height, 3, 10))
+            if isinstance(enemy, Enemy):
+                if random.randint(1, 80) == 1:
+                    enemy_lasers.append(pygame.Rect(enemy.x + enemy.width // 2, enemy.y + enemy.height, 3, 10))
 
         for ex in explosions[:]:
             frame = explosion_frames[ex[2]]
@@ -212,6 +253,32 @@ if __name__ == '__main__':
         score_text = font.render(f"Score: {score}", True, (255, 255, 255))
         win.blit(score_text, (10, 10))
 
+        bar_width = 165
+        bar_height = 15
+
+        if display_health > player_health:
+            display_health -= 1
+        elif display_health < player_health:
+            display_health += 1
+
+        health_ratio = display_health / player_max_health
+
+        if health_flash > 0:
+            bar_color = (255, 80, 80)
+            health_flash -= 1
+        else:
+            bar_color = (0, 255, 0)
+
+        pygame.draw.rect(win, (100, 0, 0), (10, 60, bar_width, bar_height))
+
+        segments = 33
+        segment_width = bar_width // segments
+        filled_segments = int(segments*health_ratio)
+
+        for i in range(filled_segments):
+            x = 10 + i * segment_width
+            pygame.draw.rect(win,bar_color,(x,60,segment_width-1,bar_height))
+
         for el in enemy_lasers:
             el.y += enemy_laser_speed
             pygame.draw.rect(win, (255, 0, 0), el)
@@ -219,10 +286,17 @@ if __name__ == '__main__':
         enemy_lasers = [el for el in enemy_lasers if el.y < HEIGHT]
 
         player_rect = pygame.Rect(char_x, char_y, 16, 16)
-        for el in enemy_lasers[:]:
-            if player_rect.colliderect(el):
-                game_over = True
-                enemy_lasers.remove(el)
+        for enemy in enemies[:]:
+            if isinstance(enemy, KamikazeEnemy):
+                enemy_rect = pygame.Rect(enemy.x, enemy.y, enemy.width, enemy.height)
+                player_rect = pygame.Rect(char_x, char_y, 16, 16)
+                if player_rect.colliderect(enemy_rect):
+                    player_health -= 40
+                    enemies.remove(enemy)
+                    health_flash = 10
+                    screen_shake = 12
+                    if player_health <= 0:
+                        game_over = True
 
         pygame.display.update()
         clock.tick(60)
