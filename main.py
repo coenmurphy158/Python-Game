@@ -24,7 +24,7 @@ enemy_lasers = []
 score = 0
 score_animation = 0
 game_over = False
-
+run_won = False
 player_health = 100
 player_max_health = 100
 display_health = player_health
@@ -174,6 +174,9 @@ def restart_game():
     global score, score_animation, game_over, bg_y1, bg_y2
     global player_health, display_health, health_flash, screen_shake
     global boss_active, boss, boss_health, boss_bullets
+    global run_won
+
+    run_won = False
 
     char_x = GAME_W // 2
     char_y = GAME_H // 2
@@ -238,6 +241,12 @@ while True:
             pygame.quit()
             sys.exit()
 
+        if game_over and event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+            restart_game()
+
+        if run_won and event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+            restart_game()
+
         if event.type == spawn_enemy and not game_over and not boss_active:
             r = random.randint(1, 4)
             if r == 1:
@@ -248,37 +257,75 @@ while True:
                 x = random.randint(0, GAME_W - 20)
                 enemies.append(Enemy(x, 0, 30, 30, x + 200))
 
-        if game_over and event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-            restart_game()
-#changes the score for when the boss activates
-    if not boss_active and score >= 1000 and not game_over:
-        boss_active = True
-        enemies = []
-        enemy_lasers = []
-        boss_bullets = []
-        boss_health = boss_max_health
-        boss = Boss(GAME_W // 2 - 32, 20, boss_image_raw)
-
-    if game_over:
+    if run_won:
         game_surface.blit(background, (0, 0))
-        go_font = pygame.font.Font('pixel_text.ttf', 48)
-        go_text = go_font.render("GAME OVER", True, (255, 0, 0))
-        game_surface.blit(go_text, (GAME_W // 2 - go_text.get_width() // 2, GAME_H // 2 - 50))
+
+        won_font = pygame.font.Font('pixel_text.ttf', 48)
+        won_text = won_font.render("RUN WON", True, (255, 165, 0))
+        game_surface.blit(
+            won_text,
+            (GAME_W // 2 - won_text.get_width() // 2, GAME_H // 2 - 50)
+        )
 
         score_font = pygame.font.Font('pixel_text.ttf', 24)
-        score_text = score_font.render(f"Final Score: {score}", True, (255, 255, 255))
-        game_surface.blit(score_text, (GAME_W // 2 - score_text.get_width() // 2, GAME_H // 2 + 10))
+        score_text = score_font.render(f"FINAL SCORE: {score}", True, (255, 255, 255))
+        game_surface.blit(
+            score_text,
+            (GAME_W // 2 - score_text.get_width() // 2, GAME_H // 2 + 10)
+        )
 
         scaled = pygame.transform.scale(game_surface, (WIDTH, HEIGHT))
         win.blit(scaled, (0, 0))
 
         hint_font = pygame.font.Font('pixel_text.ttf', 20)
         hint_text = hint_font.render("Press ENTER to restart", True, (255, 255, 255))
-        win.blit(hint_text, (WIDTH // 2 - hint_text.get_width() // 2, HEIGHT // 2 + 80))
+        win.blit(
+            hint_text,
+            (WIDTH // 2 - hint_text.get_width() // 2, HEIGHT // 2 + 80)
+        )
 
         pygame.display.update()
         clock.tick(60)
         continue
+
+    if game_over:
+        game_surface.blit(background, (0, 0))
+
+        go_font = pygame.font.Font('pixel_text.ttf', 48)
+        go_text = go_font.render("GAME OVER", True, (255, 0, 0))
+        game_surface.blit(
+            go_text,
+            (GAME_W // 2 - go_text.get_width() // 2, GAME_H // 2 - 50)
+        )
+
+        score_font = pygame.font.Font('pixel_text.ttf', 24)
+        score_text = score_font.render(f"Final Score: {score}", True, (255, 255, 255))
+        game_surface.blit(
+            score_text,
+            (GAME_W // 2 - score_text.get_width() // 2, GAME_H // 2 + 10)
+        )
+
+        scaled = pygame.transform.scale(game_surface, (WIDTH, HEIGHT))
+        win.blit(scaled, (0, 0))
+
+        hint_font = pygame.font.Font('pixel_text.ttf', 20)
+        hint_text = hint_font.render("Press ENTER to restart", True, (255, 255, 255))
+        win.blit(
+            hint_text,
+            (WIDTH // 2 - hint_text.get_width() // 2, HEIGHT // 2 + 80)
+        )
+
+        pygame.display.update()
+        clock.tick(60)
+        continue
+
+    if not boss_active and score >= 1000 and not game_over and not run_won:
+        boss_active = True
+        enemies = []
+        enemy_lasers = []
+        boss_bullets = []
+        boss_health = boss_max_health
+        boss = Boss(GAME_W // 2 - 32, 20, boss_image_raw)
 
     keys = pygame.key.get_pressed()
 
@@ -341,6 +388,7 @@ while True:
                     boss_active = False
                     boss = None
                     boss_bullets = []
+                    run_won = True
                 continue
         for enemy in enemies[:]:
             enemy_rect = pygame.Rect(enemy.x, enemy.y, enemy.width, enemy.height)
