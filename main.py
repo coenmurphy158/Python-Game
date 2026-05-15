@@ -66,8 +66,9 @@ class Enemy:
             else:
                 self.vel = -self.vel
 
+
 class KamikazeEnemy:
-    def __init__(self,x,y):
+    def __init__(self, x, y):
         self.x = x
         self.y = y
         self.speed = 2
@@ -76,19 +77,22 @@ class KamikazeEnemy:
         self.image = pygame.image.load('enemy_pixel.bmp').convert_alpha()
         self.width = self.image.get_width()
         self.height = self.image.get_height()
+
     def update(self):
         dx = self.target_x - self.x
         dy = self.target_y - self.y
-        dist = max(1,(dx*dx + dy*dy)**0.5)
+        dist = max(1, (dx * dx + dy * dy) ** 0.5)
         self.x += (dx / dist) * self.speed
         self.y += (dy / dist) * self.speed
         self.speed += 0.05
+
     def draw(self, surf):
-        surf.blit(self.image,(self.x,self.y))
+        surf.blit(self.image, (self.x, self.y))
         self.update()
 
+
 class DroneEnemy:
-    def __init__(self,x,y):
+    def __init__(self, x, y):
         self.x = x
         self.y = y
         self.speed = 1.5
@@ -97,20 +101,23 @@ class DroneEnemy:
         self.height = self.image.get_height()
         self.zone_active = False
         self.zone_timer = 0
-        self.zone_rect = pygame.Rect(0,0,100,100)
+        self.zone_rect = pygame.Rect(0, 0, 100, 100)
+
     def update(self):
         if not self.zone_active:
             self.y += self.speed
             if self.y > 150:
                 self.zone_active = True
                 self.zone_timer = 120
-                self.zone_rect.x = int(self.x + self.width/2 - self.zone_rect.width/2)
+                self.zone_rect.x = int(self.x + self.width / 2 - self.zone_rect.width / 2)
                 self.zone_rect.y = int(self.y + self.height)
         else:
             self.zone_timer -= 1
+
     def draw(self, surf):
-        surf.blit(self.image,(self.x,self.y))
+        surf.blit(self.image, (self.x, self.y))
         self.update()
+
 
 class Boss:
     def __init__(self, x, y, image):
@@ -125,6 +132,7 @@ class Boss:
         self.laser_timer = 0
         self.laser_state = "idle"
         self.laser_x = self.x + self.width // 2
+
     def update(self):
         if self.laser_state not in ("telegraph", "firing"):
             self.x += self.speed * self.dir
@@ -134,11 +142,14 @@ class Boss:
             if self.x + self.width >= GAME_W:
                 self.x = GAME_W - self.width
                 self.dir = -1
+
         self.laser_x = self.x + self.width // 2
+
         if self.bullet_timer > 0:
             self.bullet_timer -= 1
         if self.laser_timer > 0:
             self.laser_timer -= 1
+
         if self.laser_state == "idle":
             if self.bullet_timer == 0:
                 self.fire_spread()
@@ -146,28 +157,48 @@ class Boss:
             if self.laser_timer == 0:
                 self.laser_state = "telegraph"
                 self.laser_timer = int(0.8 * 60)
+
         elif self.laser_state == "telegraph":
             if self.laser_timer == 0:
                 self.laser_state = "firing"
                 self.laser_timer = int(1.0 * 60)
+
         elif self.laser_state == "firing":
             if self.laser_timer == 0:
                 self.laser_state = "cooldown"
                 self.laser_timer = int(1.0 * 60)
+
         elif self.laser_state == "cooldown":
             if self.laser_timer == 0:
                 self.laser_state = "idle"
                 self.laser_timer = int(2.0 * 60)
+
     def fire_spread(self):
         angles = [-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6]
         for a in angles:
-            boss_bullets.append({"x": self.x + self.width // 2, "y": self.y + self.height, "dx": a * 3, "dy": 4})
+            boss_bullets.append({
+                "x": self.x + self.width // 2,
+                "y": self.y + self.height,
+                "dx": a * 3,
+                "dy": 4
+            })
+
     def draw(self, surf):
         surf.blit(self.image, (self.x, self.y))
         if self.laser_state == "telegraph":
-            pygame.draw.line(surf, (255, 0, 0), (self.laser_x, self.y + self.height), (self.laser_x, GAME_H), 1)
+            pygame.draw.line(
+                surf, (255, 0, 0),
+                (self.laser_x, self.y + self.height),
+                (self.laser_x, GAME_H),
+                1
+            )
         if self.laser_state == "firing":
-            pygame.draw.line(surf, (255, 50, 50), (self.laser_x, self.y + self.height), (self.laser_x, GAME_H), 6)
+            pygame.draw.line(
+                surf, (255, 50, 50),
+                (self.laser_x, self.y + self.height),
+                (self.laser_x, GAME_H),
+                6
+            )
 
 def restart_game():
     global char_x, char_y, enemies, laser_list, enemy_lasers, explosions
@@ -200,6 +231,9 @@ def restart_game():
     boss = None
     boss_health = boss_max_health
 
+    play_intro()
+
+
 def get_sprite(sheet, col, row):
     SPRITE_W = 16
     SPRITE_H = 16
@@ -207,6 +241,9 @@ def get_sprite(sheet, col, row):
     return sheet.subsurface(rect)
 
 pygame.init()
+pygame.mixer.music.load("background_music.ogg")
+pygame.mixer.music.set_volume(0.85)
+pygame.mixer.music.play(-1)
 
 win = pygame.display.set_mode((WIDTH, HEIGHT))
 game_surface = pygame.Surface((GAME_W, GAME_H))
@@ -221,10 +258,20 @@ background = pygame.image.load("sky.bmp").convert()
 explosion_img = pygame.image.load("explosion.bmp").convert_alpha()
 explosion_sheet = pygame.image.load("bk_explo_short.bmp")
 boss_image_raw = pygame.image.load("enemy_boss1.png").convert_alpha()
+laser_sound = pygame.mixer.Sound("laser_sound.mp3")
+explosion_sound = pygame.mixer.Sound("explosion_sound.mp3")
+hit_sound = pygame.mixer.Sound("hit_sound.wav")
+
+title_card = pygame.image.load('intro_scene.png').convert_alpha()
+comic_card = pygame.image.load('comic_card.png').convert_alpha()
 
 explosion_frames = []
 frame_width = explosion_sheet.get_width() // 8
 frame_height = explosion_sheet.get_height()
+
+comic_card = pygame.transform.scale(comic_card, (GAME_W, GAME_H))
+title_card = pygame.transform.scale(title_card, (GAME_W, GAME_H))
+
 for i in range(8):
     frame = explosion_sheet.subsurface(pygame.Rect(i * frame_width, 0, frame_width, frame_height))
     explosion_frames.append(frame)
@@ -234,8 +281,31 @@ pixel_font = pygame.font.Font('pixel_text.ttf', 32)
 
 boss_health = boss_max_health
 
-while True:
+def fade_in(surface, image, speed=5):
+    fade = pygame.Surface(surface.get_size())
+    fade.fill((0, 0, 0))
+    for alpha in range(255, -1, -speed):
+        surface.blit(image, (0, 0))
+        fade.set_alpha(alpha)
+        surface.blit(fade, (0, 0))
+        pygame.display.update()
+        clock.tick(60)
 
+#changes duration of title cards
+def play_intro():
+    title_scaled = pygame.transform.scale(title_card, (WIDTH, HEIGHT))
+    comic_scaled = pygame.transform.scale(comic_card, (WIDTH, HEIGHT))
+    win.blit(comic_scaled, (0, 0))
+    pygame.display.update()
+    pygame.time.delay(3000)
+
+    title_scaled = pygame.transform.scale(title_card, (WIDTH, HEIGHT))
+    fade_in(win, title_scaled, speed=5)
+    pygame.time.delay(2000)
+
+play_intro()
+
+while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -368,6 +438,8 @@ while True:
     if keys[pygame.K_SPACE] and laser_counter == 0:
         laser_list.append({"laser_rect": pygame.Rect(char_x + 7, char_y, 2, 8)})
         laser_counter = 1
+        laser_sound.play()
+        laser_sound.set_volume(0.2)
 
     for laser in laser_list:
         pygame.draw.rect(game_surface, (255, 255, 255), laser["laser_rect"])
@@ -390,11 +462,14 @@ while True:
                     boss_bullets = []
                     run_won = True
                 continue
+
         for enemy in enemies[:]:
             enemy_rect = pygame.Rect(enemy.x, enemy.y, enemy.width, enemy.height)
             if laser["laser_rect"].colliderect(enemy_rect):
                 explosions.append([enemy.x, enemy.y, 0])
                 enemies.remove(enemy)
+                explosion_sound.play()
+                explosion_sound.set_volume(0.2)
                 laser_list.remove(laser)
                 score += 100
                 score_animation = 6
@@ -403,7 +478,9 @@ while True:
     for enemy in enemies[:]:
         if isinstance(enemy, Enemy):
             if random.randint(1, 80) == 1:
-                enemy_lasers.append(pygame.Rect(enemy.x + enemy.width // 2, enemy.y + enemy.height, 3, 10))
+                enemy_lasers.append(
+                    pygame.Rect(enemy.x + enemy.width // 2, enemy.y + enemy.height, 3, 10)
+                )
 
         if isinstance(enemy, DroneEnemy) and enemy.zone_active:
             pygame.draw.rect(game_surface, (255, 0, 0), enemy.zone_rect, 2)
@@ -451,8 +528,10 @@ while True:
         if player_rect.colliderect(el):
             player_health -= 25
             enemy_lasers.remove(el)
-            health_flash = 5
-            screen_shake = 5
+            health_flash = 8
+            screen_shake = 8
+            hit_sound.play()
+            hit_sound.set_volume(0.2)
             if player_health <= 0:
                 game_over = True
 
@@ -475,11 +554,16 @@ while True:
                     game_over = True
 
         if boss is not None and boss.laser_state == "firing":
-            laser_rect = pygame.Rect(boss.laser_x - 3, boss.y + boss.height, 6, GAME_H - (boss.y + boss.height))
+            laser_rect = pygame.Rect(
+                boss.laser_x - 3,
+                boss.y + boss.height,
+                6,
+                GAME_H - (boss.y + boss.height)
+            )
             if player_rect.colliderect(laser_rect):
-                player_health -= 1
-                health_flash = 1
-                screen_shake = 2
+                player_health -= 5
+                health_flash = 3
+                screen_shake = 3
                 if player_health <= 0:
                     game_over = True
 
@@ -492,7 +576,7 @@ while True:
             if player_rect.colliderect(enemy_rect):
                 player_health -= 40
                 enemies.remove(enemy)
-                health_flash = 10
+                health_flash = 12
                 screen_shake = 12
                 if player_health <= 0:
                     game_over = True
@@ -518,7 +602,7 @@ while True:
 
     for i in range(filled_segments):
         x = 10 + i * segment_width
-        pygame.draw.rect(win, (0,255,0), (x, 50, segment_width - 1, 15))
+        pygame.draw.rect(win, (0, 255, 0), (x, 50, segment_width - 1, 15))
 
     if boss_active and boss is not None:
         bar_w = 260
