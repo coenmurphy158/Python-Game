@@ -2,8 +2,8 @@ import pygame
 import sys
 import random
 
-WIDTH, HEIGHT = 800, 600
-GAME_W, GAME_H = 400, 300
+WIDTH, HEIGHT = 1000, 800
+GAME_W, GAME_H = 500, 400
 
 char_x = GAME_W // 2
 char_y = GAME_H // 2
@@ -35,7 +35,7 @@ enemy_spawn_delay = 3000
 boss_active = False
 boss = None
 boss_health = 0
-boss_max_health = 1500
+boss_max_health = 2000
 boss_bullets = []
 game_state = "title"
 rapid_fire_timer = 0
@@ -196,7 +196,7 @@ class Boss:
                 self.laser_timer = int(2.0 * 60)
 
     def fire_spread(self):
-        angles = [-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6]
+        angles = [-0.11,-0.8, -0.5, -0.2, 0, 0.2, 0.5, 0.8, 0.11]
         for a in angles:
             boss_bullets.append({
                 "x": self.x + self.width // 2,
