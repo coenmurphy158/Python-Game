@@ -2,7 +2,7 @@ import pygame
 import sys
 import random
 
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 1000, 800
 GAME_W, GAME_H = 400, 300
 
 char_x = GAME_W // 2
@@ -302,7 +302,7 @@ def get_sprite(sheet, col, row):
     return sheet.subsurface(rect)
 
 pygame.init()
-pygame.mixer.music.load("background_music.ogg")
+pygame.mixer.music.load("background_shi.ogg")
 pygame.mixer.music.set_volume(0.85)
 pygame.mixer.music.play(-1)
 
