@@ -811,7 +811,7 @@ while True:
         clock.tick(60)
         continue
 
-    if not boss_active and score >= 7000 and not game_over and not run_won:
+    if not boss_active and score >= 10000 and not game_over and not run_won:
         boss_active = True
         enemies = []
         enemy_lasers = []
@@ -857,7 +857,7 @@ while True:
 
     current_cooldown = laser_cooldown
     if rapid_fire_timer > 0:
-        current_cooldown = max(5, laser_cooldown // 10)
+        current_cooldown = max(10, laser_cooldown // 5)
 
     if laser_counter >= current_cooldown:
         laser_counter = 0
