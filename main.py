@@ -35,7 +35,7 @@ enemy_spawn_delay = 3000
 boss_active = False
 boss = None
 boss_health = 0
-boss_max_health = 2000
+boss_max_health = 2500
 boss_bullets = []
 game_state = "title"
 rapid_fire_timer = 0
@@ -196,7 +196,7 @@ class Boss:
                 self.laser_timer = int(2.0 * 60)
 
     def fire_spread(self):
-        angles = [-0.12,-0.9, -0.5, -0.2, 0, 0.2, 0.5, 0.9, 0.12]
+        angles = [-2, -1.5, -1, -0.5, -0.2, 0, 0.2, 0.5, 1, 1.5, 2]
         for a in angles:
             boss_bullets.append({
                 "x": self.x + self.width // 2,
@@ -302,7 +302,7 @@ def get_sprite(sheet, col, row):
     return sheet.subsurface(rect)
 
 pygame.init()
-pygame.mixer.music.load("background_music.ogg")
+pygame.mixer.music.load("background_shi.ogg")
 pygame.mixer.music.set_volume(0.85)
 pygame.mixer.music.play(-1)
 
@@ -874,7 +874,7 @@ while True:
 
         laser_counter = 1
         laser_sound.play()
-
+        laser_sound.set_volume(0.75)
     for laser in laser_list:
         pygame.draw.rect(game_surface, (255, 255, 255), laser["laser_rect"])
         laser["laser_rect"].y -= laser_speed
@@ -1014,9 +1014,9 @@ while True:
                 GAME_H - (boss.y + boss.height)
             )
             if player_rect.colliderect(laser_rect):
-                player_health -= 5
-                health_flash = 3
-                screen_shake = 3
+                player_health -= 10
+                health_flash = 10
+                screen_shake = 10
                 if player_health <= 0:
                     game_over = True
 
