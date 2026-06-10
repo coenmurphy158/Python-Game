@@ -2,7 +2,7 @@ import pygame
 import sys
 import random
 
-WIDTH, HEIGHT = 1000, 800
+WIDTH, HEIGHT = 1000, 600
 GAME_W, GAME_H = 500, 400
 
 char_x = GAME_W // 2
